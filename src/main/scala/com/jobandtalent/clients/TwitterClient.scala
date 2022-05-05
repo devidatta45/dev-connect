@@ -1,0 +1,17 @@
+package com.jobandtalent.clients
+
+import com.jobandtalent.models.{DomainError, TwitterFollowerResponse, TwitterResponse, ValidationErrors}
+import zio.ZIO
+
+trait TwitterClient {
+  val twitterService: TwitterClient.Service
+}
+
+
+object TwitterClient {
+  trait Service {
+    def getUserDetails(username: String): ZIO[TwitterClient, DomainError, Either[ValidationErrors, TwitterResponse]]
+
+    def getFollowers(userId: String): ZIO[TwitterClient, DomainError, Either[ValidationErrors, TwitterFollowerResponse]]
+  }
+}
