@@ -1,26 +1,28 @@
 package com.jobandtalent.services
 
+import cats.implicits._
+import com.jobandtalent.caching.ApplicationCaching
 import com.jobandtalent.clients.{GithubClient, TwitterClient}
 import com.jobandtalent.models._
 import zio.ZIO
-import cats.implicits._
 
 import scala.annotation.tailrec
 
 trait DevConnectService {
 
-  def areConnected(dev1: String, dev2: String): ZIO[GithubClient with TwitterClient, DomainError, Either[ValidationErrors, ConnectedResponse]]
+  def areConnected(dev1: String, dev2: String): ZIO[GithubClient with TwitterClient with ApplicationCaching,
+    DomainError, Either[ValidationErrors, ConnectedResponse]]
 }
 
 object DevConnectService {
   val service = new DevConnectService {
-    override def areConnected(dev1: String, dev2: String): ZIO[GithubClient with TwitterClient,
+    override def areConnected(dev1: String, dev2: String): ZIO[GithubClient with TwitterClient with ApplicationCaching,
       DomainError, Either[ValidationErrors, ConnectedResponse]] = {
       for {
-        dev1Organisations <- ZIO.accessM[GithubClient](_.githubService.getOrganisations(dev1))
-        dev2Organisations <- ZIO.accessM[GithubClient](_.githubService.getOrganisations(dev2))
-        dev1TwitterDetails <- ZIO.accessM[TwitterClient](_.twitterService.getUserDetails(dev1))
-        dev2TwitterDetails <- ZIO.accessM[TwitterClient](_.twitterService.getUserDetails(dev2))
+        dev1Organisations <- ZIO.accessM[GithubClient with ApplicationCaching](_.githubService.getOrganisations(dev1))
+        dev2Organisations <- ZIO.accessM[GithubClient with ApplicationCaching](_.githubService.getOrganisations(dev2))
+        dev1TwitterDetails <- ZIO.accessM[TwitterClient with ApplicationCaching](_.twitterService.getUserDetails(dev1))
+        dev2TwitterDetails <- ZIO.accessM[TwitterClient with ApplicationCaching](_.twitterService.getUserDetails(dev2))
         githubValidationErrors = concatFailedEither(Vector(dev1Organisations, dev2Organisations))
         twitterValidationErrors = concatFailedEither(Vector(dev1TwitterDetails, dev2TwitterDetails))
         connectedResponse <- if (githubValidationErrors.errors.nonEmpty || twitterValidationErrors.errors.nonEmpty) {
@@ -42,14 +44,14 @@ object DevConnectService {
                      dev2Organisations: Either[ValidationErrors, Vector[GithubResponse]],
                      dev1TwitterDetails: Either[ValidationErrors, TwitterResponse],
                      dev2TwitterDetails: Either[ValidationErrors, TwitterResponse],
-                    ): ZIO[GithubClient with TwitterClient, DomainError, Either[ValidationErrors, ConnectedResponse]] = {
+                    ): ZIO[GithubClient with TwitterClient with ApplicationCaching, DomainError, Either[ValidationErrors, ConnectedResponse]] = {
       for {
         dev1Organisations <- ZIO.fromEither(dev1Organisations).mapError(validationError => GithubError(validationError.errors.mkString(",")))
         dev2Organisations <- ZIO.fromEither(dev2Organisations).mapError(validationError => GithubError(validationError.errors.mkString(",")))
         dev1TwitterDetails <- ZIO.fromEither(dev1TwitterDetails).mapError(validationError => TwitterError(validationError.errors.mkString(",")))
         dev2TwitterDetails <- ZIO.fromEither(dev2TwitterDetails).mapError(validationError => TwitterError(validationError.errors.mkString(",")))
-        dev1Followers <- ZIO.accessM[TwitterClient](_.twitterService.getFollowers(dev1TwitterDetails.data.id))
-        dev2Followers <- ZIO.accessM[TwitterClient](_.twitterService.getFollowers(dev2TwitterDetails.data.id))
+        dev1Followers <- ZIO.accessM[TwitterClient with ApplicationCaching](_.twitterService.getFollowers(dev1TwitterDetails.data.id))
+        dev2Followers <- ZIO.accessM[TwitterClient with ApplicationCaching](_.twitterService.getFollowers(dev2TwitterDetails.data.id))
         commonOrganisations = dev1Organisations.map(_.login).intersect(dev2Organisations.map(_.login))
         twitterValidationErrors = concatFailedEither(Vector(dev1Followers, dev2Followers))
         finalResponse <- if (twitterValidationErrors.errors.nonEmpty) {

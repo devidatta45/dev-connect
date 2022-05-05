@@ -1,5 +1,6 @@
 package com.jobandtalent.clients
 
+import com.jobandtalent.caching.ApplicationCaching
 import com.jobandtalent.models.{DomainError, GithubResponse, ValidationErrors}
 import zio._
 
@@ -9,6 +10,6 @@ trait GithubClient {
 
 object GithubClient {
   trait Service {
-    def getOrganisations(username: String): ZIO[GithubClient, DomainError, Either[ValidationErrors, Vector[GithubResponse]]]
+    def getOrganisations(username: String): ZIO[GithubClient with ApplicationCaching, DomainError, Either[ValidationErrors, Vector[GithubResponse]]]
   }
 }

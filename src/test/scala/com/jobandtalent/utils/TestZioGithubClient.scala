@@ -19,7 +19,7 @@ object TestZioTwitterClient extends TwitterClient {
     override def getUserDetails(username: String): ZIO[TwitterClient, DomainError, Either[ValidationErrors, TwitterResponse]] = {
       val response: Either[DomainError, Either[ValidationErrors, TwitterResponse]] =
         TestData.twitterMockData.get(username).toRight(TwitterError("Does not exist"))
-          .map(res => TwitterResponse(DataResponse(username, username)).asRight)
+          .map(_ => TwitterResponse(DataResponse(username, username)).asRight)
 
       ZIO.fromEither(response)
     }
@@ -38,7 +38,8 @@ object TestData {
     "user1" -> Vector(GithubResponse("org1"), GithubResponse("org2"), GithubResponse("org3")),
     "user2" -> Vector(GithubResponse("org2"), GithubResponse("org3"), GithubResponse("org4")),
     "user3" -> Vector(GithubResponse("org3"), GithubResponse("org4"), GithubResponse("org5")),
-    "user4" -> Vector(GithubResponse("org7"), GithubResponse("org8"), GithubResponse("org9"))
+    "user4" -> Vector(GithubResponse("org7"), GithubResponse("org8"), GithubResponse("org9")),
+    "user5" -> Vector(GithubResponse("org9"), GithubResponse("org10"), GithubResponse("org11"))
   )
 
   val twitterMockData = Map(
@@ -46,5 +47,6 @@ object TestData {
     "user2" -> TwitterFollowerResponse(Vector(DataResponse("user1", "user1"), DataResponse("user3", "user3"))),
     "user3" -> TwitterFollowerResponse(Vector(DataResponse("user1", "user1"), DataResponse("user2", "user2"))),
     "user4" -> TwitterFollowerResponse(Vector(DataResponse("user1", "user1"))),
+    "user5" -> TwitterFollowerResponse(Vector(DataResponse("user3", "user3"))),
   )
 }

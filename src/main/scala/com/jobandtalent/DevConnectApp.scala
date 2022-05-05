@@ -3,12 +3,12 @@ package com.jobandtalent
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 
-import scala.util.Failure
 import scala.concurrent.duration._
+import scala.util.Failure
 
 object DevConnectApp extends AppContext with App {
 
-  override implicit val system = ActorSystem("Developer-Connect-App")
+  override implicit val system = ActorSystem("Dev-Connect-App")
 
   Http()
     .newServerAt(config.getString("http.interface"), config.getInt("http.port"))

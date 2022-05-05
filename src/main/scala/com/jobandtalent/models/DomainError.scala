@@ -1,6 +1,6 @@
 package com.jobandtalent.models
 
-sealed trait DomainError {
+sealed trait DomainError extends Throwable {
   def code: String
 
   def message: String
