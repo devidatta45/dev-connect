@@ -1,11 +1,11 @@
 package com.jobandtalent.caching
 
-import com.jobandtalent.caching.InMemoryGithubCaching.{TwitterFollowerResponseStore, TwitterResponseStore, UserStore}
+import com.jobandtalent.caching.InMemoryApplicationCaching.{TwitterFollowerResponseStore, TwitterResponseStore, UserStore}
 import com.jobandtalent.models.{DomainError, GithubResponse, TwitterFollowerResponse, TwitterResponse}
 import zio.Runtime.default
 import zio.{Ref, ZIO}
 
-trait InMemoryGithubCaching extends ApplicationCaching {
+trait InMemoryApplicationCaching extends ApplicationCaching {
 
   override val applicationCaching: ApplicationCaching.Service = new ApplicationCaching.Service {
     val ref: Ref[UserStore] = default.unsafeRun(Ref.make(UserStore(Map())))
@@ -38,7 +38,7 @@ trait InMemoryGithubCaching extends ApplicationCaching {
   }
 }
 
-object InMemoryGithubCaching extends InMemoryGithubCaching {
+object InMemoryApplicationCaching extends InMemoryApplicationCaching {
   final case class UserStore(storage: Map[String, Vector[GithubResponse]]) {
 
     def saveAll(username: String, organisations: Vector[GithubResponse]): (Unit, UserStore) = {

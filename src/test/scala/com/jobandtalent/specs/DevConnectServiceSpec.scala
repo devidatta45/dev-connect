@@ -10,7 +10,7 @@ import org.scalatest.{EitherValues, OptionValues, Suite}
 import zio.Runtime
 import zio.internal.Platform
 import cats.implicits._
-import com.jobandtalent.caching.{ApplicationCaching, InMemoryGithubCaching}
+import com.jobandtalent.caching.{ApplicationCaching, InMemoryApplicationCaching}
 
 class DevConnectServiceSpec extends AnyFlatSpec
   with Suite with should.Matchers
@@ -19,7 +19,7 @@ class DevConnectServiceSpec extends AnyFlatSpec
   object TestEnvironment extends GithubClient with TwitterClient with ApplicationCaching {
     override val githubService: GithubClient.Service = TestZioGithubClient.githubService
     override val twitterService: TwitterClient.Service = TestZioTwitterClient.twitterService
-    override val applicationCaching: ApplicationCaching.Service = InMemoryGithubCaching.applicationCaching
+    override val applicationCaching: ApplicationCaching.Service = InMemoryApplicationCaching.applicationCaching
   }
 
   val myRuntime: Runtime[GithubClient with TwitterClient with ApplicationCaching] = Runtime(TestEnvironment, Platform.default)
